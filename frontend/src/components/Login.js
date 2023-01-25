@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import Form from "react-validation/build/form";
 import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
+import avatar from '../assets/images/avatar_2x.png'; 
 
 import AuthService from "../services/auth.service";
 
@@ -49,23 +50,17 @@ const Login = () => {
 
     
     if (checkBtn.current.context._errors.length === 0) {
-      console.log("1111111111111111");
+      
       AuthService.login(username, password).then(
         () => {
-          console.log("redirrrrrrrrrrrrrrrrr");
+          //console.log("redirrrrrrrrrrrrrrrrr");
           navigate("/home");
           console.log( window.location)
          
         },
         (error) => {
-          /*const resMessage =
-            (error.response &&
-              error.response.data &&
-              error.response.data.message) ||
-            error.message ||
-            error.toString();
-           */
-            const resMessage = "Login failed!";  
+
+          const resMessage = "Login failed!";  
           setLoading(false);
           setMessage(resMessage);
         }
@@ -80,7 +75,7 @@ const Login = () => {
     <div className="col-md-12">
       <div className="card card-container">
         <img
-          src="//ssl.gstatic.com/accounts/ui/avatar_2x.png"
+          src={avatar}
           alt="profile-img"
           className="profile-img-card"
         />
