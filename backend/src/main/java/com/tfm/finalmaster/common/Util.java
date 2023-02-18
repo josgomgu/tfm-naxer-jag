@@ -24,6 +24,7 @@ public class Util {
     {
         try {
             String userid = jwtUtil.getKey(token);
+            //System.out.println("Userid: "+userid);
             if (userid != null) {
                 User u = userDao.getUser(Long.parseLong(userid));
                 return u;

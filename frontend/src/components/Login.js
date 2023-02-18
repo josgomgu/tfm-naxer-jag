@@ -5,6 +5,7 @@ import Input from "react-validation/build/input";
 import CheckButton from "react-validation/build/button";
 import avatar from '../assets/images/avatar_2x.png'; 
 
+
 import AuthService from "../services/auth.service";
 
 const required = (value) => {
@@ -52,11 +53,9 @@ const Login = () => {
     if (checkBtn.current.context._errors.length === 0) {
       
       AuthService.login(username, password).then(
-        () => {
-          //console.log("redirrrrrrrrrrrrrrrrr");
-          navigate("/home");
-          console.log( window.location)
-         
+        () => {          
+          navigate("/home");              
+          window.location.reload();                
         },
         (error) => {
 

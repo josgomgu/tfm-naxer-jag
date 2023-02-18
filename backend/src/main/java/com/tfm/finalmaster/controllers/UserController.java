@@ -29,6 +29,7 @@ public class UserController {
     @RequestMapping(value = "api/users")
     public ResponseEntity<APIResponse> getUsers(@RequestHeader(value = "Authorization") String token)
     {
+        //System.out.println("token: "+token);
         User u = util.checkToken(token);
         if(u != null) {
             apiResponse.setStatus(HttpStatus.OK.value());

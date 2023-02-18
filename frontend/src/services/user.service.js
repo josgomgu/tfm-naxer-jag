@@ -2,7 +2,7 @@ import axios from "axios";
 import authHeader from "./auth-header";
 
 
-const API_URL = "http://localhost:9090/api/users";
+const API_URL = process.env.REACT_APP_API_URL+"/users";
 
 
 const getPublicContent = () => {
@@ -34,14 +34,25 @@ const addUser = (user) => {
 
 
   return axios(config).catch(function (error) {
-    //console.log("JAG: ");
+    
   });
   
 
 };
 
 const updateUser = (user) => {
-  return axios.put(API_URL, { headers: authHeader(),data : user });
+  var data = JSON.stringify(user);
+  
+  var config = {
+    method: 'put',
+    url: API_URL,
+    headers: authHeader(),
+    data : data
+  };
+
+
+  return axios(config).catch(function (error) {    
+  });
 };
 
 const getUsers = () =>{
@@ -55,6 +66,13 @@ const getUserById = (id) =>{
   });
 }
 
+const deleteUser = (id) =>{
+  
+  return axios.delete(API_URL + '/' + id , { headers: authHeader() }).catch(function (error) {
+    return null;
+  });
+}
+
 const UserService = {
   getPublicContent,
   getUserBoard,
@@ -63,7 +81,8 @@ const UserService = {
   getUsers,
   addUser,
   updateUser,
-  getUserById
+  getUserById,
+  deleteUser
 };
 
 export default UserService;

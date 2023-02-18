@@ -1,24 +1,22 @@
 import React, { Component } from 'react'
-import UserService from '../../services/user.service';
+import RoleService from '../../services/role.service';
 import { Link } from "react-router-dom";
 import Message from '../../common/Message';
 import { Modal } from 'react-responsive-modal';
 import 'react-responsive-modal/styles.css';
 
-let user2 = {"userid":"","login":"","password":"","confirmPwd":"","name":"","last_name":"","last_login":"","creation_date":"","create_user":"","update_date":"","update_user":"","status":""};
-let tittle = "Users List";
-let model = "User";
-let map = "/users/";
+let record = {"roleid":"","name":"","creation_date":"","create_user":"","update_date":"","update_user":"","status":""};
+let tittle = "Roles List";
+let model = "Role";
+let map = "/roles/";
  
-class ListUser extends Component {
+class ListRole extends Component {
     constructor(props) {
         super(props)
 
         this.state = {
-                users: []
-        }  
-                          
-        
+            records: []
+        }                            
     }
 
     
@@ -26,8 +24,8 @@ class ListUser extends Component {
     deleteRecord(id){
         if (window.confirm("Are you sure to delete this record?"))
         { 
-            UserService.deleteUser(id).then( res => {
-                this.setState({users: this.state.users.filter(user => user.userid !== id)});
+            RoleService.deleteRecord(id).then( res => {
+                this.setState({records: this.state.records.filter(record => record.roleid !== id)});
             });                        
             Message.Deleted();
         }
@@ -36,25 +34,22 @@ class ListUser extends Component {
     }
     
     componentDidMount(){
-        UserService.getUsers().then((res) => {            
-            this.setState({ users: res.data.data});
+        RoleService.getRecords().then((res) => {            
+            this.setState({ records: res.data.data});
         });
     }
-
     
     state={
         openModal : false
     }
 
-    
     open(id)
     {
-        UserService.getUserById(id).then( (res) =>{         
+        RoleService.getRecordById(id).then( (res) =>{         
                     
             if(res.data.status === 200 )
             {
-                user2 = res.data.data;  
-                
+                record = res.data.data;                  
                 this.setState({openModal : true}) 
             } 
         }
@@ -80,24 +75,20 @@ class ListUser extends Component {
 
                             <thead>
                                 <tr>
-                                    <th> Login</th>
-                                    <th> Name</th>
-                                    <th> LastName</th>
-                                    <th> Actions</th>
+                                    <th> ID</th>
+                                    <th> Name</th>                                    
                                 </tr>
                             </thead>
                             <tbody>
                                 {
-                                    this.state.users.map(
-                                        user => 
-                                        <tr key = {user.userid}>
-                                             <td> {user.login}</td>
-                                             <td> {user.name} </td>   
-                                             <td> {user.last_name}</td>
+                                    this.state.records.map(
+                                        record => 
+                                        <tr key = {record.roleid}>
+                                             <td> {record.name}</td>
                                              <td>
-                                                 <Link to={map+user.userid }><button style={{marginLeft: "10px"}} className="btn btn-success">Edit</button></Link>                                                 
-                                                 <button style={{marginLeft: "10px"}} onClick={ () => this.deleteRecord(user.userid)} className="btn btn-danger">Delete </button>
-                                                 <button style={{marginLeft: "10px"}} onClick={() =>this.open(user.userid)} className="btn btn-info">View </button>                                                
+                                                 <Link to={map+record.roleid }><button style={{marginLeft: "10px"}} className="btn btn-success">Edit</button></Link>                                                 
+                                                 <button style={{marginLeft: "10px"}} onClick={ () => this.deleteRecord(record.roleid)} className="btn btn-danger">Delete </button>
+                                                 <button style={{marginLeft: "10px"}} onClick={() =>this.open(record.roleid)} className="btn btn-info">View </button>                                                
                                              </td>
                                         </tr>
                                     )
@@ -114,28 +105,20 @@ class ListUser extends Component {
                                 
                                 <tbody>
                                     <tr>
-                                        <th scope="row">Login</th>
-                                        <td>{user2.login}</td>                                   
+                                        <th scope="row">ID</th>
+                                        <td>{record.roleid}</td>                                   
                                     </tr>
                                     <tr>
                                         <th scope="row">Name</th>
-                                        <td>{user2.name}</td>                                   
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">LastName</th>
-                                        <td>{user2.last_name}</td>                                    
-                                    </tr>
-                                    <tr>
-                                        <th scope="row">Last Login</th>
-                                        <td>{user2.last_login}</td>                                    
+                                        <td>{record.name}</td>                                   
                                     </tr>
                                     <tr>
                                         <th scope="row">Creation Date</th>
-                                        <td>{user2.creation_date}</td>                                    
+                                        <td>{record.creation_date}</td>                                    
                                     </tr>
                                     <tr>
                                         <th scope="row">Status</th>
-                                        <td>{user2.status}</td>                                    
+                                        <td>{record.status}</td>                                    
                                     </tr>                                    
                                 </tbody>
                             </table>
@@ -148,4 +131,4 @@ class ListUser extends Component {
     }
 }
 
-export default ListUser
+export default ListRole

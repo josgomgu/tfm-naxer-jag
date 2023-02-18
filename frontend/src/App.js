@@ -9,33 +9,28 @@ import AuthService from "./services/auth.service";
 import Login from "./components/Login";
 import Home from "./components/Home";
 import Profile from "./components/Profile";
-import BoardUser from "./components/BoardUser";
-import BoardModerator from "./components/BoardModerator";
-import BoardAdmin from "./components/BoardAdmin";
 import Users from "./components/user/ListUser";
+import Roles from "./components/role/ListRole";
 import UserPersist from "./components/user/PersistUser";
+import RolePersist from "./components/role/PersistRole";
 import Protected from "./common/Protected";
-
 
 import EventBus from "./common/EventBus";
 
 
-const App = () => {
-  const [showModeratorBoard, setShowModeratorBoard] = useState(false);
-  const [showAdminBoard, setShowAdminBoard] = useState(false);
+const App = () => {  
   const [currentUser, setCurrentUser] = useState(undefined);
   const [isLoggedIn, setisLoggedIn] = useState(null);
 
   useEffect(() => {
     const user = AuthService.getCurrentUser();
 
-    console.log("Este es el usuario conectado: "+JSON.stringify(user));
+    //console.log("Este es el usuario conectado: "+JSON.stringify(user));
     if (user) {
       setCurrentUser(user);
       //setShowModeratorBoard(user.roles.includes("ROLE_MODERATOR"));
       //setShowAdminBoard(user.roles.includes("ROLE_ADMIN"));
-      setShowModeratorBoard(true);
-      setShowAdminBoard(true);
+     
       setisLoggedIn(true);
     }
     else
@@ -55,8 +50,6 @@ const App = () => {
 
   const logOut = () => {
     AuthService.logout();
-    setShowModeratorBoard(false);
-    setShowAdminBoard(false);
     setCurrentUser(undefined);
   };
 
@@ -74,27 +67,19 @@ const App = () => {
             </Link>
           </li>
         )}
-
-          {showModeratorBoard && (
+          
+          {currentUser && (
             <li className="nav-item">
-              <Link to={"/mod"} className="nav-link">
-                User Board
-              </Link>
-            </li>
-          )}
-
-          {showAdminBoard && (
-            <li className="nav-item">
-              <Link to={"/admin"} className="nav-link">
-                Admin Board
+              <Link to={"/users"} className="nav-link">
+                Users
               </Link>
             </li>
           )}
 
           {currentUser && (
             <li className="nav-item">
-              <Link to={"/users"} className="nav-link">
-                Users
+              <Link to={"/roles"} className="nav-link">
+                Roles
               </Link>
             </li>
           )}
@@ -127,15 +112,14 @@ const App = () => {
 
       <div className="container mt-3">
         <Routes>
-          <Route path="/" element={<Protected isLoggedIn={isLoggedIn}><Home/></Protected>} />
-          <Route path="/home" element={<Protected isLoggedIn={isLoggedIn}><Home/></Protected>} />
+          <Route path="/"  element={<Protected isLoggedIn={isLoggedIn}><Home/></Protected>} />
+          <Route path="/home"  element={<Protected isLoggedIn={isLoggedIn}><Home/></Protected>} />
           <Route path="/login" element={<Login/>} />         
-          <Route path="/profile" element={<Protected isLoggedIn={isLoggedIn}><Profile/></Protected>} />
-          <Route path="/user" element={<BoardUser/>} />
-          <Route path="/mod" element={<BoardModerator/>} />
-          <Route path="/admin" element={<BoardAdmin/>} />
+          <Route path="/profile" element={<Protected isLoggedIn={isLoggedIn}><Profile/></Protected>} />          
           <Route path="/users" element={<Protected isLoggedIn={isLoggedIn}><Users/></Protected>} />
-          <Route path="/users/:id" element={<Protected isLoggedIn={isLoggedIn}><UserPersist/></Protected>} />                  
+          <Route path="/users/:id" element={<Protected isLoggedIn={isLoggedIn}><UserPersist/></Protected>} />                           
+          <Route path="/roles" element={<Protected isLoggedIn={isLoggedIn}><Roles/></Protected>} />
+          <Route path="/roles/:id" element={<Protected isLoggedIn={isLoggedIn}><RolePersist/></Protected>} />                           
         </Routes>
       </div>    
 

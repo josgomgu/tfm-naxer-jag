@@ -111,4 +111,30 @@ public class RoleController {
         return util.getUnauthorizedResponse();
 
     }
+
+    @RequestMapping(value = "api/roles/{roleid}", method = RequestMethod.GET)
+    public ResponseEntity<APIResponse> getRole(@PathVariable Long roleid,@RequestHeader(value = "Authorization") String token)
+    {
+        User u = util.checkToken(token);
+        if(u != null) {
+            Role role = roleDao.getRole(roleid);
+            if(role !=null) {
+                apiResponse.setStatus(HttpStatus.OK.value());
+                apiResponse.setMessage("");
+                apiResponse.setData(role);
+            }
+            else {
+                apiResponse.setStatus(HttpStatus.NOT_FOUND.value());
+                apiResponse.setMessage("Role not found!");
+                apiResponse.setData("");
+            }
+
+
+            apiResponse.setToken("");
+            return ResponseEntity.status(HttpStatus.OK.value()).body(apiResponse);
+        }
+
+        return util.getUnauthorizedResponse();
+
+    }
 }

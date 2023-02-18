@@ -1,47 +1,49 @@
-import React, { useState, useRef } from "react";
-import { useNavigate } from 'react-router-dom';
-import Form from "react-validation/build/form";
-import Input from "react-validation/build/input";
-import CheckButton from "react-validation/build/button";
-import UserService from '../../services/user.service';
+import React, { useState,useEffect } from "react";
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as Yup from 'yup'
 import { useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import UserService from '../../services/user.service';
+import Message from '../../common/Message';
+
+export default function ConfirmPassword() {
 
 
-const required = (value) => {
-  
-  if (!value) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        This field is required!
-      </div>
-    );
-  }
-};
+  const formSchema = Yup.object().shape({
+    password: Yup.string()
+      .required('Password is mandatory')
+      .min(3, 'Password must be at 3 char long'),
+    confirmPwd: Yup.string()
+      .required('Password is mandatory')
+      .oneOf([Yup.ref('password')], 'Passwords does not match'),
+    login: Yup.string()
+      .required('Login is mandatory')
+      .min(5, 'Login must be at 5 char long'),
+    name: Yup.string()
+      .required('Name is mandatory')
+      .min(5, 'Name must be at 5 char long'),    
+    last_name: Yup.string()      
+  })
 
-
-
-const PersistUser = () => {
+  const formOptions = { resolver: yupResolver(formSchema) }
+  const { register, handleSubmit, formState,reset } = useForm(formOptions)
+  const { errors } = formState
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState(null);
 
   const  params  = useParams();
 
   let tittle = '';
-  let displayPass = 'block';
+  let readonly = false;
   let model = 'users';
-  let modelName = 'User';
+  let modelName = 'User';  
 
   let navigate = useNavigate();
 
-  const form = useRef();
-  const checkBtn = useRef();
 
-  const [login, setLogin] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [name, setName] = useState("");
-  const [last_name, setLastName] = useState("");
   const [trx] = useState(params.id);
-  
 
   if(trx ==='_add')
 
@@ -49,72 +51,66 @@ const PersistUser = () => {
   else
   {
     tittle = 'Update '+modelName;
-    displayPass = 'none';
-    UserService.getUserById(trx).then( (res) =>{         
-      
-      if(res=== null){
-        navigate("/login");
-        window.location.reload();
-      }
-      console.log(res.data.status)
-      if(res.data.status === 200 )
-      {
-          let user = res.data.data;
-            console.log(JSON.stringify(user));
-            setLogin(user.login);        
-            setPassword(user.password);
-            setName(user.name);
-            setLastName(user.last_name);
-      } 
-      else
-      {
-        navigate("/"+model);
-      }     
-    }); 
+    readonly = true;
+  }   
+
+useEffect(() => {
+   
     
-    
-  }
+    if(trx !=='_add')
+    {
+        
+        UserService.getUserById(trx).then( (res) =>{         
+        
+        if(res=== null){
+            navigate("/login");
+            window.location.reload();
+        }
+        
+        if(res.data.status === 200 )
+        {
+            let user2 = res.data.data;                  
+            setUser({"userid":user2.userid,
+            "login":user2.login,
+            "password":user2.password,
+            "confirmPwd":user2.password,
+            "name":user2.name,
+            "last_name":user2.last_name,
+            "last_login":user2.last_login,
+            "creation_date":user2.creation_date,
+            "create_user":user2.create_user,
+            "update_date":user2.update_date,
+            "update_user":user2.update_user,
+            "status":user2.status})
+        } 
+        else
+        {
+            navigate("/"+model);
+        }     
+        });         
+    } 
+}, [trx,model,navigate]);
+
+  // effect runs when user state is updated
+  useEffect(() => {
+        // reset form with user data
+        reset(user);
+    }, [user,reset]);
 
 
-
-
-  const onChangeLogin = (e) => {
-    const login = e.target.value;
-    setLogin(login);
-  };
-
-  const onChangePassword = (e) => {
-    const password = e.target.value;
-    setPassword(password);
-  };
-
-  const onChangeName = (e) => {
-    const name = e.target.value;
-    setName(name);
-  };
-
-  const onChangeLastName = (e) => {
-    const last_name = e.target.value;
-    setLastName(last_name);
-  };
-
+  
   const onCancel = (e) => {
     navigate("/"+model);
   };
 
-  
-  const handlePersist = (e) => {
-    e.preventDefault();
-
-    
+  function onSubmit(data) {
     setMessage('');
     setLoading(true);
 
-    form.current.validateAll();
-       
-    if (checkBtn.current.context._errors.length === 0) {
-      let user = {name: name, last_name: last_name, login: login, password: password};
-      UserService.addUser(user).then(response =>{
+    
+    if(trx ==='_add')
+    {
+        UserService.addUser(data).then(response =>{
 
             setMessage('');
             if(JSON.stringify(response.data.status) !== "200"){
@@ -123,15 +119,32 @@ const PersistUser = () => {
             }
                 
             else {
+                Message.Success();
                 navigate("/"+model);
-                window.location.reload();                
+                //window.location.reload();                
+            }
+        });
+    } 
+    else
+    {
+        UserService.updateUser(data).then(response =>{
+
+            setMessage('');
+            if(JSON.stringify(response.data.status) !== "200"){
+                setMessage(JSON.stringify(response.data.message));             
+                setLoading(false);
+            }
+                
+            else {
+              Message.Success();
+              navigate("/"+model);
+                //window.location.reload();                
             }
         })
-    }
-    else
-        setLoading(false);
-  };
-
+    }    
+    
+    return false
+  }
   return (
     <div className = "container" >
       <div className = "row">
@@ -139,89 +152,86 @@ const PersistUser = () => {
         <h3 className="text-center">{tittle}</h3>
         <div className = "card-body"></div>
 
-            <Form onSubmit={handlePersist} ref={form}>
-                <div className = "form-group">
-                    <label htmlFor="login">Login</label>
-                    <Input  type="text" 
-                            name="login" 
-                            className="form-control" 
-                            value={login}
-                            onChange={onChangeLogin}
-                            validations={[required]}
-                            />
-                </div>  
-                            
-                    <div className="form-group" style={{ display: displayPass }}>
-                        <label htmlFor="password">Password</label>
-                        <Input
-                        type="password"
-                        className="form-control"
-                        name="password"
-                        value={password}
-                        onChange={onChangePassword}
-                        validations={[required]}
-                        
-                        />
-                    </div>
+        <form onSubmit={handleSubmit(onSubmit)}>
 
-                    <div className="form-group" style={{ display: displayPass }}>
-                        <label htmlFor="repassword">Re-Password</label>
-                        <Input
-                        type="password"
-                        className="form-control"
-                        name="repassword"
-                        value={password}
-                        onChange={onChangePassword}
-                        validations={[required]}
-                        
-                        />
-                    </div>
+            <div className = "form-group">
+                <label>Login</label>
+                <input  type="text" 
+                        name="login" 
+                        {...register('login')}
+                        readOnly={readonly} 
+                        className={`form-control ${errors.login ? 'is-invalid' : ''}`}                                                         
+                        />     
+                <div className="invalid-feedback">{errors.login?.message}</div>                           
+            </div> 
 
-                    <div className = "form-group">
-                        <label htmlFor="name">Name</label>
-                        <Input  type="text" 
-                                name="name" 
-                                className="form-control" 
-                                value={name}
-                                onChange={onChangeName}
-                                validations={[required]}
-                                />
-                    </div>
+            <div className="form-group">
+                <label>Password</label>
+                <input
+                    name="password"
+                    type="password"
+                    {...register('password')}
+                    readOnly={readonly}
+                    className={`form-control ${errors.password ? 'is-invalid' : ''}`}
+                />
+                <div className="invalid-feedback">{errors.password?.message}</div>
+            </div>
+           
+            <div className="form-group" >
+                <label>Confirm Password</label>
+                <input
+                    name="confirmPwd"
+                    type="password"
+                    {...register('confirmPwd')}
+                    readOnly={readonly}
+                    className={`form-control ${errors.confirmPwd ? 'is-invalid' : ''}`}
+                />
+                <div className="invalid-feedback">{errors.confirmPwd?.message}</div>
+            </div>
 
-                    <div className = "form-group">
-                        <label htmlFor="name">LastName</label>
-                        <Input  type="text" 
-                                name="last_name" 
-                                className="form-control" 
-                                value={last_name}
-                                onChange={onChangeLastName}
-                                validations={[required]}
-                                />
-                    </div>
+            <div className = "form-group">
+                <label htmlFor="name">Name</label>
+                <input  type="text" 
+                        name="name" 
+                        {...register('name')}
+                        className={`form-control ${errors.name ? 'is-invalid' : ''}`}                                        
+                        />     
+                <div className="invalid-feedback">{errors.name?.message}</div>                           
+            </div>
 
-                <div className="form-group">
-                    <button className="btn btn-primary" disabled={loading} >
+            <div className = "form-group">
+                <label htmlFor="last_name">Last Name</label>
+                <input  type="text" 
+                        name="last_name" 
+                        {...register('last_name')}
+                 className={`form-control ${errors.last_name ? 'is-invalid' : ''}`}                                        
+                        />     
+                <div className="invalid-feedback">{errors.last_name?.message}</div>                           
+            </div>
+
+            <div className="mt-3">
+                <button className="btn btn-primary" disabled={loading} type="submit">
                     {loading && (
                         <span className="spinner-border spinner-border-sm"></span>
                     )}
                     <span>Save</span>
-                    </button>
-                    <button className="btn btn-danger" style={{marginLeft: "10px"}} onClick={onCancel}>Cancel</button>
-                </div>
-
+                </button>
+                <button className="btn btn-danger" style={{marginLeft: "10px"}} onClick={onCancel}>Cancel</button>
+            </div>
+            <div className="mt-3">
                 {message && (
-                    <div className="form-group">
-                    <div className="alert alert-danger" role="alert">
-                        {message}
-                    </div>
+                    <div className="form-group text-center">
+                        <div className="alert alert-danger" role="alert">
+                            {message}
+                        </div>
                     </div>
                 )}
-                <CheckButton style={{ display: "none" }} ref={checkBtn} />
-            </Form>
+                
+            </div>
+            
+        </form>
         </div>    
       </div>
     </div>
-  );
-};
-
-export default PersistUser;
+  )
+}

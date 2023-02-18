@@ -34,7 +34,7 @@ const login =  (username, password) => {
     .post(API_URL + "login", data,config)
     .then((response) => {
       if (response.data) {
-        console.log("Usuario OK");
+        //console.log("Usuario OK");
         localStorage.setItem("user", JSON.stringify(response.data.data));
         localStorage.setItem("token", JSON.stringify(response.data.token));
       }
